@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualización de Plazas Judiciales</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            text-align: center;
+        }
+        .escenarios-nav {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .escenarios-nav button {
+            padding: 8px 16px;
+            margin: 0 10px;
+            background-color: #4169E1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .escenarios-nav button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .escenario {
+            display: none;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .escenario.active {
+            display: block;
+        }
+        .magistrados {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .magistrado {
+            text-align: center;
+            margin: 10px;
+        }
+        .circulo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .tipo {
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        .presidente { background-color: #8B0000; }
+        .presidente-especialista { background-color: #FF4500; }
+        .especialista { background-color: #228B22; }
+        .generalista { background-color: #4169E1; }
+        .vacante { background-color: #808080; opacity: 0.5; }
+        .plaza-perdida { background-color: #000000; opacity: 0.7; }
+        
+        .conteo {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .leyenda {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .leyenda-item {
+            display: flex;
+            align-items: center;
+        }
+        .leyenda-circulo {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Visualización del Problema de Plazas de Especialistas en TSJ</h1>
+        
+        <div class="escenarios-nav">
+            <button id="prev-btn" disabled>Anterior</button>
+            <span id="escenario-contador">Escenario 1 de 7</span>
+            <button id="next-btn">Siguiente</button>
+        </div>
+        
+        <div id="escenarios-container">
+            <!-- Escenario 1 -->
+            <div class="escenario active" data-escenario="1">
+                <h2>Situación inicial</h2>
+                <p>La Sala de lo Social del TSJ tiene 6 plazas: 1 de Presidente, 2 de Especialistas y 3 de Generalistas.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado">
+                        <div class="circulo vacante">Vacante</div>
+                        <div class="tipo">Presidente</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo especialista">Gloria Poyatos</div>
+                        <div class="tipo">Especialista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                </div>
+                
+                <div class="conteo">
+                    <h3>Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> 2</p>
+                    <p><strong>Personas generalistas:</strong> 3</p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> 2</p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> 3</p>
+                </div>
+            </div>
+            
+            <!-- Escenario 2 -->
+            <div class="escenario" data-escenario="2">
+                <h2>Nombramiento de Gloria Poyatos como Presidenta</h2>
+                <p>Gloria Poyatos, ocupando plaza de especialista, es nombrada Presidenta. Deja vacante su plaza de especialista.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado">
+                        <div class="circulo presidente-especialista">Gloria Poyatos</div>
+                        <div class="tipo">Presidente (E)</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo vacante">Vacante (E)</div>
+                        <div class="tipo">Vacante</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                </div>
+                
+                <div class="conteo">
+                    <h3>Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> 2</p>
+                    <p><strong>Personas generalistas:</strong> 3</p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> 2</p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> 3</p>
+                </div>
+            </div>
+            
+            <!-- Escenario 3 -->
+            <div class="escenario" data-escenario="3">
+                <h2>Escenario correcto: Se convoca plaza de especialista</h2>
+                <p>Se convoca la plaza vacante como especialista, manteniendo las 2 plazas reservadas a especialistas.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado">
+                        <div class="circulo presidente-especialista">Gloria Poyatos</div>
+                        <div class="tipo">Presidente (E)</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo especialista">Nuevo Esp.</div>
+                        <div class="tipo">Especialista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                </div>
+                
+                <div class="conteo">
+                    <h3>Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> 3</p>
+                    <p><strong>Personas generalistas:</strong> 3</p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> 2</p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> 3</p>
+                </div>
+            </div>
+            
+            <!-- Escenario 4 -->
+            <div class="escenario" data-escenario="4">
+                <h2>Escenario incorrecto: Se convoca plaza de generalista</h2>
+                <p>Error: Se convoca la plaza como generalista. Se pierde una plaza reservada a especialistas.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado">
+                        <div class="circulo presidente-especialista">Gloria Poyatos</div>
+                        <div class="tipo">Presidente (E)</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Nuevo Gen.</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                </div>
+                
+                <div class="conteo">
+                    <h3>Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> 2</p>
+                    <p><strong>Personas generalistas:</strong> 4</p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> 1</p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> 4</p>
+                </div>
+            </div>
+            
+            <!-- Escenario 5 -->
+            <div class="escenario" data-escenario="5">
+                <h2>Consecuencia futura: Jubilación de la Presidenta</h2>
+                <p>Si la Presidenta (especialista) se jubila, ¿qué ocurre si antes se convocó una plaza de generalista?</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado">
+                        <div class="circulo vacante">Vacante (P)</div>
+                        <div class="tipo">Vacante</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 4</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                </div>
+                
+                <div class="conteo">
+                    <h3>Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> 1</p>
+                    <p><strong>Personas generalistas:</strong> 4</p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> 1</p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> 4</p>
+                </div>
+            </div>
+            
+            <!-- Escenario 6 -->
+            <div class="escenario" data-escenario="6">
+                <h2>Posible futuro: Nuevo Presidente generalista</h2>
+                <p>Un generalista ocupa la presidencia. La Sala ahora tiene 5 generalistas y solo 1 especialista.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado">
+                        <div class="circulo presidente">Nuevo Presidente</div>
+                        <div class="tipo">Presidente</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 4</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                </div>
+                
+                <div class="conteo">
+                    <h3>Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> 1</p>
+                    <p><strong>Personas generalistas:</strong> 5</p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> 1</p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> 4</p>
+                </div>
+            </div>
+            
+            <!-- Escenario 7 -->
+            <div class="escenario" data-escenario="7">
+                <h2>Consecuencia final: Plaza de especialista perdida</h2>
+                <p>Se ha perdido definitivamente una plaza de especialista, ahora sólo hay 1 en lugar de 2 originales.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado">
+                        <div class="circulo presidente">Nuevo Presidente</div>
+                        <div class="tipo">Presidente</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo plaza-perdida">Plaza perdida</div>
+                        <div class="tipo">Plaza perdida</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                    <div class="magistrado">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                    </div>
+                </div>
+                
+                <div class="conteo">
+                    <h3>Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> 1</p>
+                    <p><strong>Personas generalistas:</strong> 4</p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> 1</p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> 4</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="leyenda">
+            <h3>Leyenda:</h3>
+            <div class="leyenda-item">
+                <div class="leyenda-circulo presidente"></div>
+                <span>Presidente</span>
+            </div>
+            <div class="leyenda-item">
+                <div class="leyenda-circulo presidente-especialista"></div>
+                <span>Presidente (E)</span>
+            </div>
+            <div class="leyenda-item">
+                <div class="leyenda-circulo especialista"></div>
+                <span>Especialista</span>
+            </div>
+            <div class="leyenda-item">
+                <div class="leyenda-circulo generalista"></div>
+                <span>Generalista</span>
+            </div>
+            <div class="leyenda-item">
+                <div class="leyenda-circulo vacante"></div>
+                <span>Vacante</span>
+            </div>
+            <div class="leyenda-item">
+                <div class="leyenda-circulo plaza-perdida"></div>
+                <span>Plaza perdida</span>
+            </div>
+        </div>
+        
+        <div class="conclusion">
+            <h3>Conclusión:</h3>
+            <p>Este problema demuestra que cuando un especialista es nombrado presidente, la plaza que deja vacante debe convocarse como plaza de especialista, no como generalista. De lo contrario, se pierde permanentemente una plaza reservada a especialistas, alterando la composición establecida del tribunal.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const contador = document.getElementById('escenario-contador');
+            const escenarios = document.querySelectorAll('.escenario');
+            let escenarioActual = 1;
+            const totalEscenarios = escenarios.length;
+            
+            function actualizarEscenario() {
+                // Ocultar todos los escenarios
+                escenarios.forEach(escenario => {
+                    escenario.classList.remove('active');
+                });
+                
+                // Mostrar el escenario actual
+                document.querySelector(`[data-escenario="${escenarioActual}"]`).classList.add('active');
+                
+                // Actualizar el contador
+                contador.textContent = `Escenario ${escenarioActual} de ${totalEscenarios}`;
+                
+                // Habilitar/deshabilitar botones
+                prevBtn.disabled = escenarioActual === 1;
+                nextBtn.disabled = escenarioActual === totalEscenarios;
+            }
+            
+            prevBtn.addEventListener('click', function() {
+                if (escenarioActual > 1) {
+                    escenarioActual--;
+                    actualizarEscenario();
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (escenarioActual < totalEscenarios) {
+                    escenarioActual++;
+                    actualizarEscenario();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
