@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualización de Plazas Judiciales</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <style>
+        :root {
+            --color-primary: #3b82f6;
+            --color-primary-dark: #2563eb;
+            --color-primary-light: #93c5fd;
+            --color-secondary: #f59e0b;
+            --color-secondary-dark: #d97706;
+            --color-background: #f9fafb;
+            --color-surface: #ffffff;
+            --color-text: #1f2937;
+            --color-text-light: #6b7280;
+            --color-presidente: #9f1239;
+            --color-presidente-especialista: #ea580c;
+            --color-especialista: #15803d;
+            --color-generalista: #2563eb;
+            --color-vacante: #94a3b8;
+            --color-plaza-perdida: #1e293b;
+            --font-primary: 'Segoe UI', system-ui, sans-serif;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-radius-sm: 0.25rem;
+            --border-radius-md: 0.5rem;
+            --border-radius-lg: 0.75rem;
+            --border-radius-full: 9999px;
+            --transition-fast: 150ms ease-in-out;
+            --transition-normal: 250ms ease-in-out;
+            --transition-slow: 350ms ease-in-out;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background-color: var(--color-surface);
+            padding: 0.75rem 0;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .logo h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-primary-dark);
+            margin: 0;
+        }
+
+        .logo span {
+            font-weight: 300;
+            color: var(--color-text-light);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--color-text);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--color-primary-dark);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--color-primary-light);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        .escenarios-nav {
+            background-color: var(--color-surface);
+            padding: 0.5rem;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+            margin: 1rem auto;
+            max-width: 800px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            position: sticky;
+            top: 70px;
+            z-index: 9;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.4rem 0.8rem;
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-sm);
+            font-size: 0.9rem;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: var(--color-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background-color: var(--color-text-light);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .escenario-counter {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--color-text-light);
+            white-space: nowrap;
+        }
+
+        .progress-container {
+            flex: 1;
+            height: 6px;
+            background-color: #e5e7eb;
+            border-radius: var(--border-radius-full);
+            overflow: hidden;
+            margin: 0 0.5rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--color-primary);
+            border-radius: var(--border-radius-full);
+            transition: width var(--transition-normal);
+        }
+
+        .escenario {
+            display: none;
+            background-color: var(--color-surface);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all var(--transition-normal);
+        }
+
+        .escenario.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .magistrados {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .magistrado {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform var(--transition-normal);
+        }
+
+        .magistrado:hover {
+            transform: translateY(-5px);
+        }
+
+        .circulo {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--border-radius-full);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .circulo::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(100%);
+            transition: transform var(--transition-normal);
+            border-radius: 50%;
+        }
+
+        .magistrado:hover .circulo::before {
+            transform: translateY(0);
+        }
+
+        .tipo {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text-light);
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--border-radius-full);
+            margin-top: 0.5rem;
+        }
+
+        .presidente { background-color: var(--color-presidente); }
+        .presidente-especialista { background-color: var(--color-presidente-especialista); }
+        .especialista { background-color: var(--color-especialista); }
+        .generalista { background-color: var(--color-generalista); }
+        .vacante { 
+            background-color: var(--color-vacante); 
+            position: relative;
+        }
+        .vacante::after {
+            content: '';
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            border: 2px dashed rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+        }
+        .plaza-perdida { 
+            background-color: var(--color-plaza-perdida); 
+            position: relative;
+        }
+        .plaza-perdida::after {
+            content: '\2715';
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .conteo {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-radius: var(--border-radius-md);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 rgba(59, 130, 246, 0.2); }
+            50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+        }
+
+        .conteo h3 {
+            grid-column: 1 / -1;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+            color: var(--color-primary-dark);
+        }
+
+        .conteo p {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .conteo p strong {
+            color: var(--color-primary-dark);
+        }
+
+        .alert {
+            padding: 1.25rem;
+            border-radius: var(--border-radius-md);
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-color: var(--color-primary);
+        }
+
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-color: var(--color-secondary);
+        }
+
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        .alert-success {
+            background-color: rgba(34, 197, 94, 0.1);
+            border-color: #22c55e;
+        }
+
+        .quote {
+            background-color: #f8fafc;
+            border-left: 4px solid var(--color-text-light);
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            border-radius: var(--border-radius-sm);
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 2rem 0;
+        }
+
+        .leyenda {
+            background-color: var(--color-surface);
+            border-radius: var(--border-radius-md);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .leyenda h3 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .leyenda-items {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .leyenda-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: rgba(0, 0, 0, 0.03);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-md);
+            transition: all var(--transition-normal);
+        }
+
+        .leyenda-item:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .leyenda-circulo {
+            width: 20px;
+            height: 20px;
+            border-radius: var(--border-radius-full);
+        }
+
+        .conclusion {
+            background-color: var(--color-surface);
+            border-radius: var(--border-radius-md);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-md);
+            border-top: 4px solid var(--color-primary);
+        }
+
+        .conclusion h3 {
+            color: var(--color-primary-dark);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .scenario-dots {
+            display: none;
+        }
+
+        .scenario-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+
+        .scenario-dot.active {
+            background-color: var(--color-primary);
+            transform: scale(1.3);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background-color: var(--color-surface);
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 1rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Estilos para hacerlo responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.75rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 0.75rem;
+            }
+
+            h2 {
+                font-size: 1.25rem;
+            }
+
+            .escenario {
+                padding: 1.25rem;
+            }
+
+            .magistrados {
+                gap: 0.75rem;
+            }
+
+            .circulo {
+                width: 65px;
+                height: 65px;
+                font-size: 0.75rem;
+            }
+            
+            .escenarios-nav {
+                padding: 0.3rem;
+                top: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.25rem;
+            }
+
+            .escenarios-nav {
+                padding: 0.25rem;
+            }
+
+            .btn {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.8rem;
+            }
+
+            .escenario {
+                padding: 0.75rem;
+            }
+
+            .circulo {
+                width: 55px;
+                height: 55px;
+                font-size: 0.65rem;
+            }
+
+            .conteo {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+        }
+
+        /* Estilo para tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.875rem;
+            box-shadow: var(--shadow-md);
+            pointer-events: none;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .slideInUp {
+            animation: slideInUp 0.5s ease-in-out;
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Modo oscuro */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: #0f172a;
+                --color-surface: #1e293b;
+                --color-text: #f1f5f9;
+                --color-text-light: #94a3b8;
+                --color-primary: #3b82f6;
+                --color-primary-dark: #2563eb;
+                --color-primary-light: #60a5fa;
+            }
+
+            .card-header {
+                background-color: var(--color-primary-dark);
+            }
+
+            .vacante::after {
+                border-color: rgba(0, 0, 0, 0.3);
+            }
+
+            .alert-info {
+                background-color: rgba(59, 130, 246, 0.2);
+            }
+
+            .alert-warning {
+                background-color: rgba(245, 158, 11, 0.2);
+            }
+
+            .alert-danger {
+                background-color: rgba(239, 68, 68, 0.2);
+            }
+
+            .alert-success {
+                background-color: rgba(34, 197, 94, 0.2);
+            }
+
+            .quote {
+                background-color: rgba(241, 245, 249, 0.05);
+            }
+
+            hr {
+                background-color: #334155;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <h1>VisualizaTSJ <span>| Plazas Judiciales</span></h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 class="fadeIn">Visualización del Problema de Plazas de Especialistas en TSJ</h1>
+        
+        <div class="escenarios-nav slideInUp">
+            <button id="prev-btn" class="btn btn-outline" disabled>
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar" style="width: 7.69%"></div>
+            </div>
+            <span id="escenario-contador" class="escenario-counter">1/13</span>
+            <button id="next-btn" class="btn">
+                <i class="fas fa-arrow-right"></i>
+            </button>
+            <div class="scenario-dots" id="scenario-dots"></div>
+        </div>
+        
+        <div id="escenarios-container">
+            <!-- Escenario 1 -->
+            <div class="escenario active slideInUp" data-escenario="1">
+                <h2><i class="fas fa-gavel"></i> Situación inicial</h2>
+                <p>La Sala de lo Social del TSJ tiene 6 plazas: 1 de Presidente, 2 de Especialistas y 3 de Generalistas.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado tooltip">
+                        <div class="circulo vacante">Vacante</div>
+                        <div class="tipo">Presidente</div>
+                        <span class="tooltiptext">Plaza de Presidente vacante pendiente de nombramiento</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo especialista">Gloria Poyatos</div>
+                        <div class="tipo">Especialista</div>
+                        <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                        <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                </div>
+                
+                <div class="conteo">
+                    <h3><i class="fas fa-calculator"></i> Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> <span class="floating">2</span></p>
+                    <p><strong>Personas generalistas:</strong> <span class="floating">3</span></p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">2</span></p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">3</span></p>
+                </div>
+            </div>
+            
+            <!-- Escenario 2 -->
+            <div class="escenario" data-escenario="2">
+                <h2><i class="fas fa-user-tie"></i> Nombramiento de Gloria Poyatos como Presidenta</h2>
+                <p>Gloria Poyatos, ocupando plaza de especialista, es nombrada Presidenta. Deja vacante su plaza de especialista.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado tooltip">
+                        <div class="circulo presidente-especialista">Gloria Poyatos</div>
+                        <div class="tipo">Presidente (E)</div>
+                        <span class="tooltiptext">Presidente con perfil de especialista</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo vacante">Vacante (E)</div>
+                        <div class="tipo">Vacante</div>
+                        <span class="tooltiptext">Plaza vacante que anteriormente ocupaba un especialista</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                        <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                </div>
+                
+                <div class="conteo">
+                    <h3><i class="fas fa-calculator"></i> Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> <span class="floating">2</span></p>
+                    <p><strong>Personas generalistas:</strong> <span class="floating">3</span></p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">2</span></p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">3</span></p>
+                </div>
+            </div>
+            
+            <!-- Escenario 3 -->
+            <div class="escenario" data-escenario="3">
+                <h2><i class="fas fa-check-circle"></i> Escenario correcto: Se convoca plaza de especialista</h2>
+                <p>Se convoca la plaza vacante como especialista, manteniendo las 2 plazas reservadas a especialistas.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado tooltip">
+                        <div class="circulo presidente-especialista">Gloria Poyatos</div>
+                        <div class="tipo">Presidente (E)</div>
+                        <span class="tooltiptext">Presidente con perfil de especialista</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo especialista">Nuevo Esp.</div>
+                        <div class="tipo">Especialista</div>
+                        <span class="tooltiptext">Nuevo magistrado especialista que ocupa la plaza vacante</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                        <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success">
+                    <p><strong><i class="fas fa-check"></i> Solución correcta:</strong> La plaza vacante dejada por el especialista nombrado Presidente se cubre con otro especialista, manteniendo el número de plazas reservadas a especialistas (2).</p>
+                </div>
+                
+                <div class="conteo">
+                    <h3><i class="fas fa-calculator"></i> Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> <span class="floating">3</span></p>
+                    <p><strong>Personas generalistas:</strong> <span class="floating">3</span></p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">2</span></p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">3</span></p>
+                </div>
+            </div>
+            
+            <!-- Escenario 4 -->
+            <div class="escenario" data-escenario="4">
+                <h2><i class="fas fa-times-circle"></i> Escenario incorrecto: Se convoca plaza de generalista</h2>
+                <p>Error: Se convoca la plaza como generalista. Se pierde una plaza reservada a especialistas.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado tooltip">
+                        <div class="circulo presidente-especialista">Gloria Poyatos</div>
+                        <div class="tipo">Presidente (E)</div>
+                        <span class="tooltiptext">Presidente con perfil de especialista</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Nuevo Gen.</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Nuevo magistrado generalista que ocupa la plaza vacante que antes era de especialista</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                        <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <p><strong><i class="fas fa-exclamation-triangle"></i> Error:</strong> Se convoca la plaza vacante como generalista, perdiendo una plaza reservada a especialistas, lo que contraviene la proporción establecida en la LOPJ.</p>
+                </div>
+                
+                <div class="conteo">
+                    <h3><i class="fas fa-calculator"></i> Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> <span class="floating">2</span></p>
+                    <p><strong>Personas generalistas:</strong> <span class="floating">4</span></p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">1</span></p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">4</span></p>
+                </div>
+            </div>
+            
+            <!-- Escenario 5 -->
+            <div class="escenario" data-escenario="5">
+                <h2><i class="fas fa-hourglass-end"></i> Consecuencia futura: Jubilación o pase a Servicios Especiales de la Presidenta</h2>
+                <p>Si la Presidenta (especialista) se jubila o pasa servicios especiales, ¿qué ocurre si antes se convocó una plaza de generalista?</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado tooltip">
+                        <div class="circulo vacante">Vacante (P)</div>
+                        <div class="tipo">Vacante</div>
+                        <span class="tooltiptext">Plaza de Presidente vacante tras la jubilación</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 4</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista que ocupa la plaza que antes era de especialista</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                        <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <p><strong><i class="fas fa-exclamation-triangle"></i> Problema:</strong> Tras la jubilación de la Presidenta especialista, sólo queda 1 especialista en la Sala, cuando deberían ser 2 según la LOPJ.</p>
+                </div>
+                
+                <div class="conteo">
+                    <h3><i class="fas fa-calculator"></i> Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> <span class="floating">1</span></p>
+                    <p><strong>Personas generalistas:</strong> <span class="floating">4</span></p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">1</span></p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">4</span></p>
+                </div>
+            </div>
+            
+            <!-- Escenario 6 -->
+            <div class="escenario" data-escenario="6">
+                <h2><i class="fas fa-exclamation-circle"></i> Posible futuro: Nuevo Presidente generalista</h2>
+                <p>Un generalista ocupa la presidencia. La Sala ahora tiene 5 generalistas y solo 1 especialista.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado tooltip">
+                        <div class="circulo presidente">Nuevo Presidente</div>
+                        <div class="tipo">Presidente</div>
+                        <span class="tooltiptext">Nuevo presidente con perfil generalista</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 4</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista que ocupa la plaza que antes era de especialista</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                        <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <p><strong><i class="fas fa-exclamation-triangle"></i> Desequilibrio:</strong> La Sala tiene ahora 5 generalistas y sólo 1 especialista, cuando la proporción correcta debería ser 2 especialistas y 3 generalistas, más el Presidente.</p>
+                </div>
+                
+                <div class="conteo">
+                    <h3><i class="fas fa-calculator"></i> Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> <span class="floating">1</span></p>
+                    <p><strong>Personas generalistas:</strong> <span class="floating">5</span></p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">1</span></p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">4</span></p>
+                </div>
+            </div>
+            
+            <!-- Escenario 7 -->
+            <div class="escenario" data-escenario="7">
+                <h2><i class="fas fa-skull-crossbones"></i> Consecuencia final: Plaza de especialista perdida</h2>
+                <p>Se ha perdido definitivamente una plaza de especialista, ahora sólo hay 1 en lugar de 2 originales.</p>
+                
+                <div class="magistrados">
+                    <div class="magistrado tooltip">
+                        <div class="circulo presidente">Nuevo Presidente</div>
+                        <div class="tipo">Presidente</div>
+                        <span class="tooltiptext">Presidente con perfil generalista</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo plaza-perdida">Plaza perdida</div>
+                        <div class="tipo">Plaza perdida</div>
+                        <span class="tooltiptext">Plaza de especialista perdida definitivamente</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo especialista">Esp. 2</div>
+                        <div class="tipo">Especialista</div>
+                        <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 1</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 2</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                    <div class="magistrado tooltip">
+                        <div class="circulo generalista">Gen. 3</div>
+                        <div class="tipo">Generalista</div>
+                        <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <p><strong><i class="fas fa-ban"></i> Consecuencia irreversible:</strong> Se ha perdido permanentemente una plaza reservada a especialistas, lo que contraviene la proporción establecida en el art. 330.3 LOPJ.</p>
+                </div>
+                
+                <div class="conteo">
+                    <h3><i class="fas fa-calculator"></i> Conteo actual:</h3>
+                    <p><strong>Personas especialistas:</strong> <span class="floating">1</span></p>
+                    <p><strong>Personas generalistas:</strong> <span class="floating">4</span></p>
+                    <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">1</span></p>
+                    <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">4</span></p>
+                </div>
+            </div>
+            
+            <!-- Escenario 8 - TSJ Tenerife -->
+            <div class="escenario" data-escenario="8">
+                <h2><i class="fas fa-university"></i> Ejemplo práctico: TSJ de Tenerife (3 plazas)</h2>
+                <p>Configuración inicial: 1 Presidente, 1 Generalista, 1 Especialista.</p>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Configuración inicial</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="magistrados">
+                            <div class="magistrado tooltip">
+                                <div class="circulo presidente">Presidente</div>
+                                <div class="tipo">Presidente</div>
+                                <span class="tooltiptext">Presidente del tribunal</span>
+                            </div>
+                            <div class="magistrado tooltip">
+                                <div class="circulo generalista">Generalista</div>
+                                <div class="tipo">Generalista</div>
+                                <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                            </div>
+                            <div class="magistrado tooltip">
+                                <div class="circulo especialista">Especialista</div>
+                                <div class="tipo">Especialista</div>
+                                <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                            </div>
+                        </div>
+                        
+                        <div class="conteo">
+                            <h3><i class="fas fa-calculator"></i> Conteo inicial:</h3>
+                            <p><strong>Personas especialistas:</strong> <span class="floating">1</span></p>
+                            <p><strong>Personas generalistas:</strong> <span class="floating">1</span></p>
+                            <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">1</span></p>
+                            <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">1</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Después del cambio incorrecto</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Si el especialista es nombrado Presidente y se convoca una plaza de generalista...</p>
+                        
+                        <div class="magistrados">
+                            <div class="magistrado tooltip">
+                                <div class="circulo presidente-especialista">Presidente (E)</div>
+                                <div class="tipo">Presidente</div>
+                                <span class="tooltiptext">Presidente con perfil de especialista</span>
+                            </div>
+                            <div class="magistrado tooltip">
+                                <div class="circulo generalista">Generalista 1</div>
+                                <div class="tipo">Generalista</div>
+                                <span class="tooltiptext">Magistrado generalista original</span>
+                            </div>
+                            <div class="magistrado tooltip">
+                                <div class="circulo generalista">Generalista 2</div>
+                                <div class="tipo">Generalista</div>
+                                <span class="tooltiptext">Nuevo magistrado generalista que ocupa la plaza que antes era de especialista</span>
+                            </div>
+                        </div>
+                        
+                        <div class="conteo">
+                            <h3><i class="fas fa-calculator"></i> Resultado:</h3>
+                            <p><strong>Personas especialistas:</strong> <span class="floating">1</span> (el Presidente)</p>
+                            <p><strong>Personas generalistas:</strong> <span class="floating">2</span></p>
+                            <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">0</span></p>
+                            <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">2</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <p><strong><i class="fas fa-exclamation-triangle"></i> Problema:</strong> Si el Presidente especialista se jubilara, y la presidencia recae en un generalista, la Sala se quedaría sin ningún especialista.</p>
+                </div>
+            </div>
+            
+            <!-- Escenario 9 - TSJ Aragón -->
+            <div class="escenario" data-escenario="9">
+                <h2><i class="fas fa-university"></i> Ejemplo práctico: TSJ de Aragón (4 plazas)</h2>
+                <p>Configuración inicial: 1 Presidente, 2 Generalistas, 1 Especialista.</p>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Configuración inicial</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="magistrados">
+                            <div class="magistrado tooltip">
+                                <div class="circulo presidente">Presidente</div>
+                                <div class="tipo">Presidente</div>
+                                <span class="tooltiptext">Presidente del tribunal</span>
+                            </div>
+                            <div class="magistrado tooltip">
+                                <div class="circulo generalista">Generalista 1</div>
+                                <div class="tipo">Generalista</div>
+                                <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                            </div>
+                            <div class="magistrado tooltip">
+                                <div class="circulo generalista">Generalista 2</div>
+                                <div class="tipo">Generalista</div>
+                                <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                            </div>
+                            <div class="magistrado tooltip">
+                                <div class="circulo especialista">Especialista</div>
+                                <div class="tipo">Especialista</div>
+                                <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                            </div>
+                        </div>
+                        
+                        <div class="conteo">
+                            <h3><i class="fas fa-calculator"></i> Conteo inicial:</h3>
+                            <p><strong>Personas especialistas:</strong> <span class="floating">1</span></p>
+                            <p><strong>Personas generalistas:</strong> <span class="floating">3</span></p>
+                            <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">1</span></p>
+                            <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">2</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Después del cambio incorrecto</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Si el especialista es nombrado Presidente y se convoca una plaza de generalista...</p>
+                        
+                        <div class="magistrados">
+                            <div class="magistrado tooltip">
+                                <div class="circulo presidente-especialista">Presidente (E)</div>
+                                <div class="tipo">Presidente</div>
+                                <span class="tooltiptext">Presidente con perfil de especialista</span>
+                            </div>
+                            <div class="magistrado tooltip">
+                                <div class="circulo generalista">Generalista 1</div>
+                                <div class="tipo">Generalista</div>
+                                <span class="tooltiptext">Magistrado generalista original</span>
+                            </div>
+                            <div class="magistrado tooltip">
+                                <div class="circulo generalista">Generalista 2</div>
+                                <div class="tipo">Generalista</div>
+                                <span class="tooltiptext">Magistrado generalista original</span>
+                            </div>
+                            <div class="magistrado tooltip">
+                                <div class="circulo generalista">Generalista 3</div>
+                                <div class="tipo">Generalista</div>
+                                <span class="tooltiptext">Nuevo magistrado generalista que ocupa la plaza que antes era de especialista</span>
+                            </div>
+                        </div>
+                        
+                        <div class="conteo">
+                            <h3><i class="fas fa-calculator"></i> Resultado:</h3>
+                            <p><strong>Personas especialistas:</strong> <span class="floating">1</span> (el Presidente)</p>
+                            <p><strong>Personas generalistas:</strong> <span class="floating">3</span></p>
+                            <p><strong>Plazas reservadas a especialistas:</strong> <span class="floating">0</span></p>
+                            <p><strong>Plazas reservadas a generalistas:</strong> <span class="floating">3</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <p><strong><i class="fas fa-exclamation-triangle"></i> Problema:</strong> La plaza de especialista ha desaparecido. Si el Presidente especialista se jubilara o dejara el cargo, el tribunal podría quedar sin ningún especialista.</p>
+                </div>
+            </div>
+            
+            <!-- Escenario 10 - Base legal -->
+            <div class="escenario" data-escenario="10">
+                <h2><i class="fas fa-balance-scale"></i> Base legal: La Ley Orgánica del Poder Judicial</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Artículo 330.3 LOPJ</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="quote">
+                            "En cada <strong>Sala o Sección de lo Social de los Tribunales Superiores de Justicia</strong>, una de las plazas se reservará a magistrado especialista en dicho orden jurisdiccional o que haya pertenecido al extinguido Cuerpo de Magistrados de Trabajo, con preferencia del que ocupe el mejor puesto en su escalafón. Si la Sala o Sección <strong>se compusiera de cinco o más magistrados, el número de plazas cubiertas por este sistema será de dos</strong>, manteniéndose idéntica proporción en los incrementos sucesivos."
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h3>Artículo 340 LOPJ</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="quote">
+                            "Los Presidentes de Sala de la Audiencia Nacional, <strong>los Presidentes de Sala de los Tribunales Superiores de Justicia</strong> y los Presidentes de las Audiencias Provinciales <strong>que cesaren en su cargo quedarán adscritos</strong>, a su elección, al <strong>Tribunal</strong> o Audiencia <strong>en que cesen o a aquél del que provinieran en su último destino</strong>, hasta la adjudicación de la plaza correspondiente del que hubieren elegido..."
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h3><i class="fas fa-gavel"></i> Conclusiones basadas en la LOPJ:</h3>
+                    
+                    <ol style="margin-top: 15px;">
+                        <li><strong>Reserva legal de plazas:</strong> En la Sala de Las Palmas, hay dos plazas reservadas a especialista por ley (Art. 330.3 LOPJ).</li>
+                        <li><strong>Naturaleza de la presidencia:</strong> El especialista designado Presidente no puede llevarse la especialidad a la Presidencia, dado que la Presidencia no es una plaza reservada a Especialista.</li>
+                        <li><strong>Cambio de plaza:</strong> El Especialista nombrado Presidente deja de ocupar su plaza reservada a especialistas para ocupar la de Presidente, saliendo a concurso la plaza que ocupaba.</li>
+                        <li><strong>Prueba del cambio de plaza:</strong> Cuando un Presidente cesa en su cargo, queda adscrito a la Sala (Art. 340 LOPJ), y no vuelve automáticamente a su plaza anterior, lo que confirma que dejó vacante su plaza (en este caso, de especialista) al ser nombrado.</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- Escenario 11 - Análisis detallado del Art. 330.3 LOPJ -->
+            <div class="escenario" data-escenario="11">
+                <h2><i class="fas fa-search-plus"></i> Análisis detallado del Art. 330.3 LOPJ</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Interpretación correcta</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Cuando el artículo habla de plazas "cubiertas por este sistema" se refiere al sistema de <strong>reserva</strong>, es decir, "se reservará a magistrado especialista".</p>
+                        
+                        <p style="margin-top: 15px;">En una Sala de 5 o más magistrados, <strong>debe haber cubiertas 2 plazas por el sistema de reserva</strong> a magistrado especialista.</p>
+                        
+                        <div class="alert alert-info">
+                            <p><strong>Razonamiento clave:</strong> No podemos contar al Presidente como Especialista, dado que:</p>
+                            <ul>
+                                <li>La plaza de presidente no se ha cubierto "por ese sistema" de reserva a especialistas.</li>
+                                <li>La plaza de Presidente se cubre en virtud de una decisión discrecional del CGPJ.</li>
+                                <li>A la plaza de Presidente pueden concurrir tanto generalistas como especialistas.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success" style="margin-top: 1.5rem;">
+                    <h3><i class="fas fa-balance-scale"></i> Conclusiones jurídicas:</h3>
+                    
+                    <ol style="margin-top: 15px;">
+                        <li><strong>Neutralidad de la Presidencia:</strong> La plaza de Presidente es de carácter neutro, no está reservada ni a generalistas ni a especialistas.</li>
+                        <li><strong>Independencia de la persona y la plaza:</strong> El que una persona sea especialista no convierte su nueva plaza (Presidencia) en una plaza de especialista.</li>
+                        <li><strong>Vacante de la plaza original:</strong> Cuando un especialista es nombrado Presidente, deja vacante su plaza que ocupaba por el sistema de reserva.</li>
+                        <li><strong>Obligación de conservar la especialización:</strong> Esa plaza vacante debe salir a concurso como plaza de especialista para mantener la proporción establecida legalmente.</li>
+                    </ol>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <p><strong><i class="fas fa-lightbulb"></i> Consecuencia práctica:</strong> La especialización no "viaja" con la persona al ser nombrada Presidenta, sino que debe mantenerse asociada a las plazas definidas como especialistas por la ley.</p>
+                </div>
+            </div>
+
+            <!-- Escenario 12 - Jurisprudencia del Tribunal Supremo -->
+            <div class="escenario" data-escenario="12">
+                <h2><i class="fas fa-landmark"></i> Jurisprudencia: Sentencia del Tribunal Supremo de 23 de junio de 2010</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>STS 3713/2010 - Recurso 652/2009</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>La sentencia resuelve la cuestión de cuántas plazas deben reservarse a especialistas en una Sala de un Tribunal Superior de Justicia. El CGPJ había convocado una plaza como de "turno general" (para no especialistas), cuando, según los recurrentes, debía reservarse para especialistas.</p>
+                        
+                        <p style="margin-top: 15px;">Los recurrentes, todos ellos Magistrados especialistas, solicitaron que se anulara el anuncio de la plaza y se convocara nuevamente "para su cobertura entre quienes ostenten la condición de magistrado especialista".</p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info" style="margin-top: 1.5rem;">
+                    <h3><i class="fas fa-gavel"></i> Conclusiones de esta sentencia:</h3>
+                    
+                    <ol style="margin-top: 15px;">
+                        <li><strong>Unidad para el cálculo:</strong> Al determinar el número de plazas de especialistas en un Tribunal Superior de Justicia, debe atenderse al total de la Sala y no a cada Sección por separado.</li>
+                        
+                        <li><strong>Proporción legal aplicable:</strong> La proporción general de especialistas en las Salas es la de dos quintos (2/5), y no la de un tercio (1/3) como sostenía el CGPJ.</li>
+                        
+                        <li><strong>Principio de conservación:</strong> El hecho de que una plaza hubiese sido ocupada por un especialista y ahora quede vacante obliga a seguir contando esa plaza como de especialista cuando se produzca la nueva provisión, para no disminuir la proporción.</li>
+                        
+                        <li><strong>Obligación del CGPJ:</strong> El Tribunal Supremo anuló el Acuerdo del CGPJ que había convertido una plaza de especialista en generalista, ordenando que se ofertara nuevamente como plaza de especialista.</li>
+                        
+                        <li><strong>Protección del principio de especialización:</strong> La sentencia defiende la interpretación más favorable al mantenimiento de la especialización en las Salas, en concordancia con el designio de especialización proclamado por la Exposición de Motivos de la LOPJ.</li>
+                        
+                        <li><strong>Seguridad jurídica:</strong> El principio de seguridad jurídica (art. 9.3 CE) no permite que el número de plazas reservadas a especialistas pueda variar porque cambien las Secciones, si se mantiene inalterable la composición total de la Sala.</li>
+                    </ol>
+                </div>
+                
+                <div class="alert alert-success">
+                    <p><strong><i class="fas fa-check-circle"></i> Aplicación a nuestro caso:</strong> Esta jurisprudencia confirma que cuando una magistrada especialista es nombrada Presidenta, la plaza que deja vacante debe seguir siendo convocada como plaza de especialista para mantener la proporción legal obligatoria. Lo contrario supondría alterar la ratio exigida legalmente y perder permanentemente una plaza reservada a especialistas.</p>
+                </div>
+            </div>
+            
+            <!-- Escenario 13 - Conclusión -->
+            <div class="escenario" data-escenario="13">
+                <h2><i class="fas fa-check-double"></i> Conclusión: No confundir personas especialistas con plazas reservadas</h2>
+                
+                <div class="alert alert-success">
+                    <h3><i class="fas fa-exclamation-circle"></i> Principio fundamental:</h3>
+                    <p><strong>No podemos confundir personas especialistas con plazas reservadas a especialistas.</strong></p>
+                    
+                    <ul style="margin-top: 15px;">
+                        <li>Un Presidente ocupa una plaza de Presidente, independientemente de que sea especialista o generalista.</li>
+                        <li>La plaza de Presidente es de carácter neutro.</li>
+                        <li>Cuando un especialista es nombrado Presidente, deja vacante su plaza de especialista.</li>
+                        <li>Esa plaza vacante debe convocarse como plaza de especialista para mantener la proporción establecida.</li>
+                        <li>Un especialista puede ocupar una plaza de generalista por escalafón, pero eso no convierte la plaza en "de especialista".</li>
+                        <li>Contar el número de personas especialistas en una Sala no es lo mismo que contar las plazas reservadas a especialistas.</li>
+                    </ul>
+                    
+                    <p style="margin-top: 15px;"><strong>Consecuencia práctica:</strong> Cuando un especialista es nombrado Presidente, debe convocarse su plaza vacante como especialista, no como generalista.</p>
+                </div>
+                
+                <div class="conclusion">
+                    <h3><i class="fas fa-bullseye"></i> Conclusión final:</h3>
+                    <p>Este problema demuestra que cuando un especialista es nombrado presidente, la plaza que deja vacante debe convocarse como plaza de especialista, no como generalista. De lo contrario, se pierde permanentemente una plaza reservada a especialistas, alterando la composición establecida del Tribunal, y la proporción de especialistas que establece el art. 330.3 LOPJ.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="leyenda">
+            <h3><i class="fas fa-info-circle"></i> Leyenda:</h3>
+            <div class="leyenda-items">
+                <div class="leyenda-item tooltip">
+                    <div class="leyenda-circulo presidente"></div>
+                    <span>Presidente</span>
+                    <span class="tooltiptext">Presidente del Tribunal</span>
+                </div>
+                <div class="leyenda-item tooltip">
+                    <div class="leyenda-circulo presidente-especialista"></div>
+                    <span>Presidente (E)</span>
+                    <span class="tooltiptext">Presidente con perfil de especialista</span>
+                </div>
+                <div class="leyenda-item tooltip">
+                    <div class="leyenda-circulo especialista"></div>
+                    <span>Especialista</span>
+                    <span class="tooltiptext">Magistrado especialista en el orden social</span>
+                </div>
+                <div class="leyenda-item tooltip">
+                    <div class="leyenda-circulo generalista"></div>
+                    <span>Generalista</span>
+                    <span class="tooltiptext">Magistrado generalista sin especialización</span>
+                </div>
+                <div class="leyenda-item tooltip">
+                    <div class="leyenda-circulo vacante"></div>
+                    <span>Vacante</span>
+                    <span class="tooltiptext">Plaza vacante pendiente de nombramiento</span>
+                </div>
+                <div class="leyenda-item tooltip">
+                    <div class="leyenda-circulo plaza-perdida"></div>
+                    <span>Plaza perdida</span>
+                    <span class="tooltiptext">Plaza de especialista perdida definitivamente</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const contador = document.getElementById('escenario-contador');
+            const escenarios = document.querySelectorAll('.escenario');
+            const progressBar = document.getElementById('progress-bar');
+            const scenarioDots = document.getElementById('scenario-dots');
+            
+            let escenarioActual = 1;
+            const totalEscenarios = escenarios.length;
+            
+            // Crear los puntos para cada escenario
+            for (let i = 1; i <= totalEscenarios; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('scenario-dot');
+                if (i === 1) dot.classList.add('active');
+                dot.setAttribute('data-scenario', i);
+                scenarioDots.appendChild(dot);
+                
+                // Añadir evento clic para cada punto
+                dot.addEventListener('click', function() {
+                    escenarioActual = parseInt(this.getAttribute('data-scenario'));
+                    actualizarEscenario();
+                });
+            }
+            
+            function actualizarEscenario() {
+                // Ocultar todos los escenarios con animación
+                escenarios.forEach(escenario => {
+                    escenario.classList.remove('active');
+                    escenario.classList.remove('slideInUp');
+                });
+                
+                // Mostrar el escenario actual con animación
+                const escenarioActivo = document.querySelector(`[data-escenario="${escenarioActual}"]`);
+                
+                setTimeout(() => {
+                    escenarioActivo.classList.add('active');
+                    escenarioActivo.classList.add('slideInUp');
+                }, 50);
+                
+                // Actualizar el contador
+                contador.textContent = `${escenarioActual}/${totalEscenarios}`;
+                
+                // Actualizar la barra de progreso
+                const progreso = (escenarioActual / totalEscenarios) * 100;
+                progressBar.style.width = `${progreso}%`;
+                
+                // Actualizar los puntos
+                document.querySelectorAll('.scenario-dot').forEach((dot, index) => {
+                    if (index + 1 === escenarioActual) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+                
+                // Habilitar/deshabilitar botones
+                prevBtn.disabled = escenarioActual === 1;
+                nextBtn.disabled = escenarioActual === totalEscenarios;
+                
+                // Hacer scroll suave hacia el inicio del escenario
+                window.scrollTo({
+                    top: escenarioActivo.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+            
+            prevBtn.addEventListener('click', function() {
+                if (escenarioActual > 1) {
+                    escenarioActual--;
+                    actualizarEscenario();
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (escenarioActual < totalEscenarios) {
+                    escenarioActual++;
+                    actualizarEscenario();
+                }
+            });
+            
+            // Añadir tooltips a elementos con la clase tooltip
+            document.querySelectorAll('.tooltip').forEach(tooltip => {
+                tooltip.addEventListener('mouseenter', function() {
+                    const tooltipText = this.querySelector('.tooltiptext');
+                    if (tooltipText) {
+                        tooltipText.style.opacity = '1';
+                        tooltipText.style.visibility = 'visible';
+                    }
+                });
+                
+                tooltip.addEventListener('mouseleave', function() {
+                    const tooltipText = this.querySelector('.tooltiptext');
+                    if (tooltipText) {
+                        tooltipText.style.opacity = '0';
+                        tooltipText.style.visibility = 'hidden';
+                    }
+                });
+            });
+            
+            // Permitir navegación con las teclas de flecha
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' && escenarioActual < totalEscenarios) {
+                    escenarioActual++;
+                    actualizarEscenario();
+                } else if (e.key === 'ArrowLeft' && escenarioActual > 1) {
+                    escenarioActual--;
+                    actualizarEscenario();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
